@@ -21,11 +21,12 @@ module.exports = function(app) {
   app.set('views', config.root + '/server/views');
   app.set('view engine', 'jade');
   app.use(compression());
-  app.use(bodyParser.urlencoded({ extended: false }));
-  app.use(bodyParser.json());
+  //app.use(bodyParser.urlencoded({ extended: false }));
+  //app.use(bodyParser.json());
+  app.use(bodyParser.raw({limit: '50mb', type: 'audio/wav'}));
   app.use(methodOverride());
   app.use(cookieParser());
-  
+
   if ('production' === env) {
     app.use(favicon(path.join(config.root, 'public', 'favicon.ico')));
     app.use(express.static(path.join(config.root, 'public')));
