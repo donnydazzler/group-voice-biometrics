@@ -1,0 +1,22 @@
+div(ng-include='"components/navbar/navbar.html"')
+
+.container(ng-controller='GlobalCtrl').col-sm-8.col-sm-offset-2
+  .row.text-center
+    .panel.panel-info
+      .panel-heading
+        h3 Authenticate
+      .panel-body
+        form.form-horizontal(role='form')
+          .form-group
+            a(ng-click="startRecording('authenticate')")
+              i.fa.fa-microphone.fa-5x
+        p Time remaining: {{counter}} seconds
+        p.alert.alert-danger(role='alert', ng-show='status') {{status}}
+
+  .row
+    .panel.panel-default
+      .panel-heading
+        .panel-title Instructions
+      .panel-body
+        p Click the mic to login.
+        p Please say "Never forget tomorrow is a new day".
