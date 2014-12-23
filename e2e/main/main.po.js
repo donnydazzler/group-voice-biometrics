@@ -5,11 +5,14 @@
 
 'use strict';
 
-var MainPage = function() {
-  this.heroEl = element(by.css('.hero-unit'));
-  this.h1El = this.heroEl.element(by.css('h1'));
-  this.imgEl = this.heroEl.element(by.css('img'));
+var MainPage = function () {
+  this.brand = element(by.css('.navbar-brand'));
+  this.menu = element.all(by.repeater('item in menu'));
+  this.jumbotron = element(by.css('.jumbotron'));
+  this.h1El = element(by.css('h1'));
+  this.panelHeadings = element.all(by.css('h3'));
+  this.enrollButton = element(by.id('enrollButton'));
+  this.authenticateButton = element(by.id('authenticateButton'));
 };
 
 module.exports = new MainPage();
-
