@@ -13,9 +13,9 @@ div(ng-include='"components/navbar/navbar.html"')
             a(ng-click="startRecording('enroll')")
               i.fa.fa-microphone.fa-5x
         p Time remaining: {{counter}} seconds
-        p Successful enrollments: {{enrollNumber}}
+        p Successful enrollments: {{enrollments}}
         p.alert.alert-danger(role='alert', ng-show='status') {{status}}
-        a.btn.btn-success(ng-hide='enrollNumber < 3', type='button', role='button', href='/authenticate') Authenticate
+        a.btn.btn-success(ng-hide='enrollments < 3', type='button', role='button', href='/authenticate') Authenticate
   .row
     .panel.panel-default
       .panel-heading

@@ -20,7 +20,7 @@ describe('GlobalCtrl', function () {
   });
 
   it('should start with 0 enrollments, counter of 5, and recording set to false', function () {
-    expect(scope.enrollNumber).toEqual(0);
+    expect(scope.enrollments).toEqual(0);
     expect(scope.counter).toEqual(5);
     expect(scope.recording).toBeFalsy();
     expect(scope.status).toBeNull();

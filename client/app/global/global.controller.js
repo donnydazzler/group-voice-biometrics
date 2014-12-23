@@ -3,7 +3,7 @@
 angular.module('groupVoiceBiometricsApp')
   .controller('GlobalCtrl', ['$scope', '$timeout', 'audioService', function ($scope, $timeout, audioService) {
 
-    $scope.enrollNumber = 0;
+    $scope.enrollments = 0;
 
     function resetUI() {
       $scope.status = null;
@@ -21,7 +21,7 @@ angular.module('groupVoiceBiometricsApp')
         }
 
         if (result.action === 'enroll') {
-          $scope.enrollNumber = result.enrollmentId.length;
+          $scope.enrollments = result.enrollments;
           if (result.result === 'success') {
             $scope.status = 'Successful enrollment!';
             return;

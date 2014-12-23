@@ -13,7 +13,7 @@ function processEnrollment(enrollmentId, detectedTextConfidence, firstName) {
   if (detectedTextConfidence > config.voiceprintTextConfidenceThreshold) {
 
     // write enrollmentId and first name to db
-      var enrollment = {enrollmentId: [enrollmentId], firstName: firstName};
+    var enrollment = {enrollmentId: [enrollmentId], firstName: firstName};
 
     Enrollment.findOneAndUpdate({firstName: firstName}, {$push: {enrollmentId: enrollmentId}}, {upsert: true}, function (err, returnedEnrollment) {
       if (err) {
@@ -24,7 +24,7 @@ function processEnrollment(enrollmentId, detectedTextConfidence, firstName) {
       return res.status(200).json({
         result: 'success',
         firstName: firstName,
-        enrollmentId: returnedEnrollment.enrollmentId
+        enrollments: returnedEnrollment.enrollmentId.length
       });
     });
   } else {
@@ -47,8 +47,7 @@ function processAuthentication(enrollmentId) {
       }
       return res.status(200).json({
         result: 'success',
-        firstName: user.firstName,
-        enrollmentId: enrollmentId
+        firstName: user.firstName
       });
     });
 }
