@@ -1,25 +1,40 @@
 div(ng-include='"components/navbar/navbar.html"')
 
-header#banner.hero-unit
-  .container
-    h1 'Allo, 'Allo!
-    p.lead Kick-start your next web app with Angular Fullstack
-    img(src='assets/images/yeoman.png', alt='I\'m Yeoman')
+.container.text-center
+  .jumbotron
+    h1 Group Voice Biometrics
+    p A demo app to identify individuals within a group
+    p Voice biometrics provided by
+      = ' '
+      a(href='http://www.voiceit-tech.com/', target='_blank') VoiceIt
 
-.container
   .row
-    .col-lg-12
-      h1.page-header Features:
-      //ul.nav.nav-tabs.nav-stacked.col-md-4.col-lg-4.col-sm-6(ng-repeat='thing in awesomeThings')
-      //  li
-      //    a(href='#', tooltip='{{thing.info}}')
-      //      | {{thing.name}}
+    .col-sm-6
+      .panel.panel-info
+        .panel-heading
+          h3.panel-title Enrollment
+        .panel-body
+          p.
+            The first step is enrollment. This is the process of registering a user's voice with VoiceIt.
+            Once a user has registered, they can authenticate.
+          p
+            a.btn.btn-success(id='enrollButton', href='/enroll', role='button') Enroll
+    .col-sm-6
+      .panel.panel-info
+        .panel-heading
+          h3.panel-title Authentication
+        .panel-body
+          p.
+            The second step is authentication. This is the process of matching a user's voice with
+            a previously registered voiceprint.
+          p
+            a.btn.btn-success(id='authenticateButton', href='/authenticate', role='button') Authenticate
 
-footer.footer
-  .container
-    p
-      | Angular Fullstack v2.0.13
-      = ' | '
-      a(href='https://twitter.com/tyhenkel') @tyhenkel
-      = ' | '
-      a(href='https://github.com/DaftMonk/generator-angular-fullstack/issues?state=open') Issues
+  .row
+    .col-sm-12
+      hr
+      p Greg Millward
+        = ' | '
+        a(href='https://twitter.com/gregmillward') @gregmillward
+        = ' | '
+        a(href='https://github.com/gmillward/group-voice-biometrics') GitHub
