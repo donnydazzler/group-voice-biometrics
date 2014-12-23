@@ -1,7 +1,7 @@
 // Karma configuration
 // http://karma-runner.github.io/0.10/config/configuration-file.html
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     // base path, that will be used to resolve files and exclude
     basePath: '',
@@ -17,16 +17,16 @@ module.exports = function(config) {
       'client/bower_components/angular-resource/angular-resource.js',
       'client/bower_components/angular-cookies/angular-cookies.js',
       'client/bower_components/angular-sanitize/angular-sanitize.js',
-      'client/bower_components/angular-route/angular-route.js',
+      //'client/bower_components/angular-route/angular-route.js',
       'client/bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
       'client/bower_components/lodash/dist/lodash.compat.js',
       'client/bower_components/angular-ui-router/release/angular-ui-router.js',
       'client/app/app.js',
-      'client/app/app.coffee',
+      //'client/app/app.coffee',
       'client/app/**/*.js',
-      'client/app/**/*.coffee',
+      //'client/app/**/*.coffee',
       'client/components/**/*.js',
-      'client/components/**/*.coffee',
+      //'client/components/**/*.coffee',
       'client/app/**/*.jade',
       'client/components/**/*.jade',
       'client/app/**/*.html',
@@ -37,6 +37,8 @@ module.exports = function(config) {
       '**/*.jade': 'ng-jade2js',
       '**/*.html': 'html2js',
       '**/*.coffee': 'coffee',
+      'client/app/**/*.js': ['coverage'],
+      'client/components/**/*.js': ['coverage']
     },
 
     ngHtml2JsPreprocessor: {
@@ -75,6 +77,13 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: false
+    singleRun: false,
+
+    reporters: ['progress', 'coverage'],
+
+    coverageReporter: {
+      type: 'html',
+      dir: 'coverage/'
+    }
   });
 };
