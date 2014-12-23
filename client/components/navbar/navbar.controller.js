@@ -5,6 +5,12 @@ angular.module('groupVoiceBiometricsApp')
     $scope.menu = [{
       'title': 'Home',
       'link': '/'
+    }, {
+      'title': 'Enroll',
+      'link': '/enroll'
+    }, {
+      'title': 'Authenticate',
+      'link': '/authenticate'
     }];
 
     $scope.isCollapsed = true;
