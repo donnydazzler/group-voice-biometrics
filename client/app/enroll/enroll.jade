@@ -1,0 +1,29 @@
+div(ng-include='"components/navbar/navbar.html"')
+
+.container(ng-controller='GlobalCtrl').col-sm-8.col-sm-offset-2
+  .row.text-center
+    .panel.panel-info
+      .panel-heading
+        h3 Enroll
+      .panel-body
+        form(role='form')
+          .form-group
+            input.form-control(type='text', ng-model='firstName', ng-required='true', placeholder='Enter your first name')
+          .form-group
+            a(ng-click="startRecording('enroll')")
+              i.fa.fa-microphone.fa-5x
+        p Time remaining: {{counter}} seconds
+        p Successful enrollments: {{enrollNumber}}
+        p.alert.alert-danger(role='alert', ng-show='status') {{status}}
+        a.btn.btn-success(ng-hide='enrollNumber < 3', type='button', role='button', href='/authenticate') Authenticate
+  .row
+    .panel.panel-default
+      .panel-heading
+        h3.panel-title Instructions
+      .panel-body
+        p Enter your first name and click on the mic to record.
+        p During recording say "Never forget tomorrow is a new day".
+        p The voiceprint is phrase-dependent; the same phrase must be used during enrollment and authentication.
+        p The same voiceprint must be recorded at least 3 times prior to authentication.
+        p Try to record 0.5s lead and trailing background noise before and after the voiceprint phrase.
+
