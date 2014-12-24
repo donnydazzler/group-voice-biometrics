@@ -91,59 +91,59 @@ As you can see, the `firstName` field is of type string and indexed. We also sto
 The meat of the server-side logic is in the `audioHandler`. This contains several helper functions to process incoming requests and communicate with the VoiceIt wrapper and MongoDB. Let's look at the exported function:
 
 ```
-  module.exports = function handleAudio(req, res, action) {
-    var dataView,
-    enrollmentId,
-    detectedVoiceprintText,
-    detectedTextConfidence,
-    firstName,
-    enrollment,
-    promise;
+module.exports = function handleAudio(req, res, action) {
+var dataView,
+enrollmentId,
+detectedVoiceprintText,
+detectedTextConfidence,
+firstName,
+enrollment,
+promise;
 
-    dataView = req.body;
-    firstName = req.query && req.query.firstName;
+dataView = req.body;
+firstName = req.query && req.query.firstName;
 
-    if (dataView) {
-      var voiceIt = new VoiceIt({
-        developerId: config.VOICEIT_DEV_ID
-        });
+if (dataView) {
+var voiceIt = new VoiceIt({
+developerId: config.VOICEIT_DEV_ID
+});
 
-        config.wav = dataView;
+config.wav = dataView;
 
-        if (action === 'enroll') {
-          promise = voiceIt.enrollments.create(config);
-        }
-        if (action === 'authenticate') {
-          promise = voiceIt.authentications.authentication(config);
-        }
+if (action === 'enroll') {
+promise = voiceIt.enrollments.create(config);
+}
+if (action === 'authenticate') {
+promise = voiceIt.authentications.authentication(config);
+}
 
-        promise.then(function (body) {
-          console.log('voiceIt response body:', body);
+promise.then(function (body) {
+console.log('voiceIt response body:', body);
 
-          enrollmentId = body.EnrollmentID;
-          detectedVoiceprintText = body.DetectedVoiceprintText;
-          detectedTextConfidence = body.DetectedTextConfidence;
+enrollmentId = body.EnrollmentID;
+detectedVoiceprintText = body.DetectedVoiceprintText;
+detectedTextConfidence = body.DetectedTextConfidence;
 
-          if (enrollmentId) {
-            if (action === 'enroll') {
-              processEnrollment(enrollmentId, detectedTextConfidence, firstName);
-            }
-            if (action === 'authenticate') {
-              processAuthentication(enrollmentId);
-            }
-            } else {
-              console.log('No enrollment ID returned from VoiceIt');
-              return res.status(400).json({result: 'No enrollment ID returned from VoiceIt'});
-            }
-            }, function (err) {
-              console.log('error calling VoiceIt:', err);
-              return res.status(400).json({result: 'error calling VoiceIt: ' + err});
-              });
-              } else {
-                console.log('No audio data in request body');
-                return res.status(400).json({result: 'No audio data in request body'});
-              }
-            };
+if (enrollmentId) {
+if (action === 'enroll') {
+  processEnrollment(enrollmentId, detectedTextConfidence, firstName);
+}
+if (action === 'authenticate') {
+  processAuthentication(enrollmentId);
+}
+} else {
+  console.log('No enrollment ID returned from VoiceIt');
+  return res.status(400).json({result: 'No enrollment ID returned from VoiceIt'});
+}
+}, function (err) {
+  console.log('error calling VoiceIt:', err);
+  return res.status(400).json({result: 'error calling VoiceIt: ' + err});
+  });
+  } else {
+    console.log('No audio data in request body');
+    return res.status(400).json({result: 'No audio data in request body'});
+  }
+};
 ```
 
 Both the enrollment and authentication endpoints only accept HTTP POST requests. We start out by getting the WAV file from the request body and the user's first name (if one was passed in). An instance of the VoiceIt wrapper is created using the Developer ID obtained from the configuration. We add the WAV file to the config object; this is named such that it can be passed directly to the VoiceIt wrapper. The VoiceIt wrapper uses promises, so a successful response invokes the first function in our `then()` call. We grab the enrollment ID from the response body along with the speech to text confidence determined by VoiceIt. If we got an enrollment ID back from VoiceIt, this means that the request was successful.
@@ -157,6 +157,7 @@ If the action was `authenticate`, the `processAuthentication()` helper function 
 Our app uses the [Web Audio API](http://www.w3.org/TR/webaudio/) to capture audio in the browser. Unfortunately the Web Audio API is relatively new and isn't supported by all browsers yet, so the demo works best in recent desktop versions of Chrome and Firefox. We'll use Matt Diamond's [RecorderJS](https://github.com/mattdiamond/Recorderjs) plugin to export the audio. This is included in the app as a shared client-side component. One small but important change I made in `recorderWorker.js` was to export a `DataView` rather than a `Blob`; I found this was necessary in order for the server-side to process the WAV file in the request body.
 
 Continuing our journey from the back-end to front-end, let's generate an AngularJS service to support our future client-side controllers:
+
 `yo angular-fullstack:service audioService`
 
 As its name suggests, this service is responsible for handling audio data on the client. The service essentially acts as the glue between the Web Audio API, the RecorderJS plugin and our back-end server; it handles both enrollment and authentication recordings. At this point I should give a shout out to Chris Wilson and his [AudioRecorder demo](https://webaudiodemos.appspot.com/AudioRecorder/). I borrowed a couple of his initialization functions to connect the audio from the browser to the RecorderJS plugin. With the audio foundation in place, we can build out the audio service by adding methods to support the start of a recording:
@@ -177,64 +178,66 @@ this.startRecording = function (theAction, theFirstName, callback) {
 
 The following method and helper function are invoked when a recording ends:
 ```
-            this.stopRecording = function (callback) {
-              if (!audioRecorder) {
-                callback('audioRecorder is not set');
-                return;
-              }
-              audioRecorder.stop();
-              console.log('stopped recording, action:', action);
+this.stopRecording = function (callback) {
+if (!audioRecorder) {
+callback('audioRecorder is not set');
+return;
+}
+audioRecorder.stop();
+console.log('stopped recording, action:', action);
 
-              var promise = sendAudio();
-              promise.then(function (result) {
-                if (result) {
-                  result.action = action;
-                  callback(null, result);
-                  } else {
-                    callback('no result returned from server');
-                  }
-                  }, function (err) {
-                    callback(err);
-                    });
-                  };
+var promise = sendAudio();
+promise.then(function (result) {
+if (result) {
+result.action = action;
+callback(null, result);
+} else {
+callback('no result returned from server');
+}
+}, function (err) {
+callback(err);
+});
+};
 
-                  function sendAudio() {
-                    var deferred = $q.defer(), url;
-                    audioRecorder.getBuffer(function () {
-                      // exportWAV() interleaves the left and right channels (typed arrays), encodes and returns a DataView.
-                      // The wav is in little-endian format (least significant byte is first; the most common CPU architecture).
-                      audioRecorder.exportWAV(function (dataView) {
-                        // POST wav data to server-side
-                        url = (action === 'authenticate') ? '/api/authentications' : '/api/enrollments';
-                        $.ajax({
-                          url: url + '?firstName=' + firstName,
-                          type: 'POST',
-                          contentType: 'audio/wav',
-                          data: dataView,
-                          processData: false
-                          }).success(function (data) {
-                            //console.log('Response from server:', data);
-                            deferred.resolve(data);
-                            }).error(function (jqXHR, textStatus, errorThrown) {
-                              //console.log('textStatus:', textStatus);
-                              //console.log('errorThrown:', errorThrown);
-                              deferred.reject(errorThrown);
-                              });
-                              });
-                              });
-                              return deferred.promise;
-                            }
+function sendAudio() {
+var deferred = $q.defer(), url;
+audioRecorder.getBuffer(function () {
+// exportWAV() interleaves the left and right channels (typed arrays), encodes and returns a DataView.
+// The wav is in little-endian format (least significant byte is first; the most common CPU architecture).
+audioRecorder.exportWAV(function (dataView) {
+// POST wav data to server-side
+url = (action === 'authenticate') ? '/api/authentications' : '/api/enrollments';
+$.ajax({
+url: url + '?firstName=' + firstName,
+type: 'POST',
+contentType: 'audio/wav',
+data: dataView,
+processData: false
+}).success(function (data) {
+//console.log('Response from server:', data);
+deferred.resolve(data);
+}).error(function (jqXHR, textStatus, errorThrown) {
+  //console.log('textStatus:', textStatus);
+  //console.log('errorThrown:', errorThrown);
+  deferred.reject(errorThrown);
+  });
+  });
+  });
+  return deferred.promise;
+}
 ```
 
 Once the recording process is completed, the service's helper function automatically exports the WAV file (using RecorderJS) and POSTs it to the server-side.
 
 Next, let's generate the client-side enrollment and authentication routes using our good friend the angular-fullstack generator:
+
 ```
 yo angular-fullstack:route enroll
 yo angular-fullstack:route authenticate
 ```
 
 These routes require very similar presentation logic, so let's generate a shared AngularJS controller to keep the code DRY:
+
 `yo angular-fullstack:controller global`
 
 The global controller adds a `startRecording()` method to `$scope`:
