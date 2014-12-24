@@ -14,15 +14,15 @@ At this point I should note that the folks at VoiceIt were tremendously helpful 
 
 If you want to build or run the demo app, the first step is to sign up for a (free) Developer ID at the [Voiceprint Developer Portal](https://siv.voiceprintportal.com/). Once you have your Developer ID and password, login to the Voiceprint Developer Portal and create an end user. This is the user we will use to register the voiceprints. Your Developer ID, the end user's username and the end user's password are all required to run the demo, but these parameters are stored on the server and the end user doesn't need to know anything about them.
 
-I'm going to assume that you are comfortable with [Yeoman](http://yeoman.io/) and MongoDB and have both of these installed. We'll use the [angular-fullstack generator](https://github.com/DaftMonk/generator-angular-fullstack) to build out the app; this is a wonderful generator for building MEAN apps quickly and takes care of the tedious work for you. Don't forget that MongoDB (i.e., the mongod process) must be up and running before generating the app. Create a new directory, cd into it, and run the angular-fullstack generator:
+I'm going to assume that you are comfortable with [Yeoman](http://yeoman.io/) and MongoDB and have both of these installed. We'll use the [angular-fullstack generator](https://github.com/DaftMonk/generator-angular-fullstack) to build out the app; this is a wonderful generator for building MEAN apps quickly and takes care of the tedious work for you. Don't forget that MongoDB (i.e., the `mongod` process) must be up and running before generating the app. Create a new directory, cd into it, and run the angular-fullstack generator:
 
 `yo angular-fullstack group-voice-biometrics`
 
 Here's a [screenshot](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/generate-app.png) of the options I selected.
 
-Most of the defaults are fine for us. Quick tip: protractor.conf.js needs a few tweaks if you want to run a standalone Selenium server:
+Most of the defaults are fine for us. Quick tip: `protractor.conf.js` needs a few tweaks if you want to run a standalone Selenium server:
 
-```javascript
+```
 //chromeOnly: true,
 directConnect: false,
 chromeDriver: '/usr/local/lib/node_modules/protractor/selenium/chromedriver',
@@ -43,7 +43,7 @@ Run `npm install voice-it q request --save` to install the modules and add them 
 
 Before jumping into the server-side code, I have an Express body-parser configuration tip for you: since we are going to be POSTing WAV files to the server rather than JSON data, we need to ensure that the server is prepared to receive this kind of data and also files of a reasonable size. This gave me a multi-day headache; I'm hoping that others will benefit from my lesson learned! So make the following changes in `server/config/express.js`:
 
-```javascript
+```
 //app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(bodyParser.json());
 app.use(bodyParser.raw({limit: '50mb', type: 'audio/wav'}));
@@ -58,7 +58,7 @@ VOICEIT_DEV_ID
 
 Next, add a server-side config file (`server/config/config.js`); this file contains all of the configuration data for the app and the property names are compatible with the VoiceIt API wrapper:
 
-```javascript
+```
 module.exports = {
   VOICEIT_DEV_ID: process.env.VOICEIT_DEV_ID,
   email: process.env.VOICEIT_EMAIL,
@@ -79,7 +79,7 @@ yo angular-fullstack:endpoint authentication
 
 The enrollment and authentication processes are very similar, so most of the server-side logic is in a shared `audioHandler` component. The authentication controller basically invokes the audioHandler with the action `authenticate`, and the enrollment controller sends action `enroll`. Since our use case involves a small group of users who most likely know each other, I opted to go with enrollment by first name only. The first name forms an index in the database (if you have multiple people with the same first name, nicknames may be required). The enrollment collection in MongoDB is defined using Mongoose as follows:
 
-```javascript
+```
 var EnrollmentSchema = new Schema({
   firstName: {type: String, index: true},
   enrollmentId: [Number]
@@ -90,7 +90,7 @@ As you can see, the `firstName` field is of type string and indexed. We also sto
 
 The meat of the server-side logic is in the `audioHandler`. This contains several helper functions to process incoming requests and communicate with the VoiceIt wrapper and MongoDB. Let's look at the exported function:
 
-```javascript
+```
   module.exports = function handleAudio(req, res, action) {
     var dataView,
     enrollmentId,
@@ -161,7 +161,7 @@ Continuing our journey from the back-end to front-end, let's generate an Angular
 
 As its name suggests, this service is responsible for handling audio data on the client. The service essentially acts as the glue between the Web Audio API, the RecorderJS plugin and our back-end server; it handles both enrollment and authentication recordings. At this point I should give a shout out to Chris Wilson and his [AudioRecorder demo](https://webaudiodemos.appspot.com/AudioRecorder/). I borrowed a couple of his initialization functions to connect the audio from the browser to the RecorderJS plugin. With the audio foundation in place, we can build out the audio service by adding methods to support the start of a recording:
 
-```javascript
+```
 this.startRecording = function (theAction, theFirstName, callback) {
   if (!audioRecorder) {
     callback('audioRecorder is not set');
@@ -176,7 +176,7 @@ this.startRecording = function (theAction, theFirstName, callback) {
 ```
 
 The following method and helper function are invoked when a recording ends:
-```javascript
+```
             this.stopRecording = function (callback) {
               if (!audioRecorder) {
                 callback('audioRecorder is not set');
@@ -239,7 +239,7 @@ These routes require very similar presentation logic, so let's generate a shared
 
 The global controller adds a `startRecording()` method to `$scope`:
 
-```javascript
+```
 $scope.startRecording = function (action) {
 if ($scope.recording) {
 // force timer to stop
@@ -273,7 +273,7 @@ $timeout.cancel(promise);
 
 This method handles the presentation logic when the user starts recording and uses the audioService we defined earlier. A countdown timer is used to control the recording. Once the timer stops, the recording is stopped and the above service sends the audio off to the server for processing. All that's left to do in the controller is handle the service's response:
 
-```javascript
+```
 function processAudio() {
 audioService.stopRecording(function (err, result) {
 // handle audioService response
@@ -306,7 +306,7 @@ $scope.status = 'Sorry we were unable to authenticate you. Please try again.';
 ```
 
 Finally, the angular-fullstack generator created a shared navbar component for our app. We just need to add our `/enroll` and `/authenticate` routes to the controller array so they appear in the header menu:
-```javascript
+```
 $scope.menu = [{
 'title': 'Home',
 'link': '/'
