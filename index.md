@@ -13,7 +13,9 @@ If you want to build or run the demo app, the first step is to sign up for a (fr
 
 I'm going to assume that you are comfortable with [Yeoman](http://yeoman.io/) and MongoDB and have both of these installed. We'll use the [angular-fullstack generator](https://github.com/DaftMonk/generator-angular-fullstack) to build out the app; this is a wonderful generator for building MEAN apps quickly and takes care of the tedious work for you. Don't forget that MongoDB (i.e., the `mongod` process) must be up and running before generating the app. Create a new directory, cd into it, and run the angular-fullstack generator:
 
-`yo angular-fullstack group-voice-biometrics`
+```
+yo angular-fullstack group-voice-biometrics
+```
 
 Here's a [screenshot](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/generate-app.png) of the options I selected.
 
@@ -46,10 +48,7 @@ Before jumping into the server-side code, I have an Express body-parser configur
 app.use(bodyParser.raw({limit: '50mb', type: 'audio/wav'}));
 ```
 
-Next, create the following environment variables to store the important config data:
-`VOICEIT_EMAIL`
-`VOICEIT_PWD`
-`VOICEIT_DEV_ID`
+Next, create the following environment variables to store the important config data: `VOICEIT_EMAIL`, `VOICEIT_PWD` and `VOICEIT_DEV_ID`.
 
 Add a server-side config file `server/config/config.js`; this file contains all of the configuration data for the app and the property names are compatible with the VoiceIt API wrapper:
 
@@ -156,7 +155,9 @@ Our app uses the [Web Audio API](http://www.w3.org/TR/webaudio/) to capture audi
 
 Continuing our journey from the back-end to front-end, let's generate an AngularJS service to support our future client-side controllers:
 
-`yo angular-fullstack:service audioService`
+```
+yo angular-fullstack:service audioService
+```
 
 As its name suggests, this service is responsible for handling audio data on the client. The service essentially acts as the glue between the Web Audio API, the RecorderJS plugin and our back-end server; it handles both enrollment and authentication recordings. At this point I should give a shout out to Chris Wilson and his [AudioRecorder demo](https://webaudiodemos.appspot.com/AudioRecorder/). I borrowed a couple of his initialization functions to connect the audio from the browser to the RecorderJS plugin. With the audio foundation in place, we can build out the audio service by adding methods to support the start of a recording:
 
@@ -238,8 +239,10 @@ yo angular-fullstack:route authenticate
 ```
 
 These routes require very similar presentation logic, so let's generate a shared AngularJS controller to keep the code DRY:
-javascript
-`yo angular-fullstack:controller global`
+
+```
+yo angular-fullstack:controller global
+```
 
 The global controller adds a `startRecording()` method to `$scope`:
 
@@ -334,4 +337,4 @@ At this point, you can start authenticating with your [voice](https://raw.github
 Here's the [GitHub repo](https://github.com/gmillward/group-voice-biometrics) for the demo app. (Keep in mind this is demo code, so it's not fully optimized. Pull requests are welcome :)
 
 ### Next steps
-There are numerous extension points to this app. For example, you could add support for profile images, or add an audio visualization during the recording process (a la Chris Wilson's AudioRecorder demo, or [KITT's Voice Synthesizer](https://www.youtube.com/watch?v=WiTYzppwU7s)?!). On the server-side, the authentication process could be used to create an OAuth "voice grant flow". The OAuth Authorization Server would issue an OAuth access token upon successful voice authentication. Another extension point would be to combine the voice authentication process with a command. This becomes a powerful way to enhance the user experience: the user could authenticate and jump to a specific part of the app simply by saying a command.
+There are numerous extension points to this app. For example, you could add support for profile images, or add an audio visualization during the recording process (a la Chris Wilson's AudioRecorder demo, or [KITT's Voice Synthesizer](https://www.youtube.com/watch?v=WiTYzppwU7s) :). On the server-side, the authentication process could be used to create an OAuth "voice grant flow". The OAuth Authorization Server would issue an OAuth access token upon successful voice authentication. Another extension point would be to combine the voice authentication process with a command. This becomes a powerful way to enhance the user experience: the user could authenticate and jump to a specific part of the app simply by saying a command.
