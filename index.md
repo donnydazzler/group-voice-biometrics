@@ -45,7 +45,7 @@ Run `npm install voice-it q request --save` to install the modules and add them 
 
 Before jumping into the server-side code, I have an Express body-parser configuration tip for you: since we are going to be POSTing WAV files to the server rather than JSON data, we need to ensure that the server is prepared to receive this kind of data and also files of a reasonable size. This gave me a multi-day headache; I'm hoping that others will benefit from my lesson learned! So make the following changes in `server/config/express.js`:
 
-```
+```javascript
 //app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(bodyParser.json());
 app.use(bodyParser.raw({limit: '50mb', type: 'audio/wav'}));
@@ -57,9 +57,9 @@ Next, create the following environment variables to store the important config d
 `VOICEIT_PWD`
 `VOICEIT_DEV_ID`
 
-Next, add a server-side config file `server/config/config.js`; this file contains all of the configuration data for the app and the property names are compatible with the VoiceIt API wrapper:
+Add a server-side config file `server/config/config.js`; this file contains all of the configuration data for the app and the property names are compatible with the VoiceIt API wrapper:
 
-```
+```javascript
 module.exports = {
   VOICEIT_DEV_ID: process.env.VOICEIT_DEV_ID,
   email: process.env.VOICEIT_EMAIL,
@@ -75,12 +75,14 @@ module.exports = {
 Let's generate our server-side enrollment and authentication endpoints:
 ```
 yo angular-fullstack:endpoint enrollment
+```
+```
 yo angular-fullstack:endpoint authentication
 ```
 
 The enrollment and authentication processes are very similar, so most of the server-side logic is in a shared `audioHandler` component. The authentication controller basically invokes the audioHandler with the action `authenticate`, and the enrollment controller sends action `enroll`. Since our use case involves a small group of users who most likely know each other, I opted to go with enrollment by first name only. The first name forms an index in the database (if you have multiple people with the same first name, nicknames may be required). The enrollment collection in MongoDB is defined using Mongoose as follows:
 
-```
+```javascript
 var EnrollmentSchema = new Schema({
   firstName: {type: String, index: true},
   enrollmentId: [Number]
@@ -91,7 +93,7 @@ As you can see, the `firstName` field is of type string and indexed. We also sto
 
 The meat of the server-side logic is in the `audioHandler`. This contains several helper functions to process incoming requests and communicate with the VoiceIt wrapper and MongoDB. Let's look at the exported function:
 
-```
+```javascript
 module.exports = function handleAudio(req, res, action) {
 var dataView,
 enrollmentId,
@@ -163,7 +165,7 @@ Continuing our journey from the back-end to front-end, let's generate an Angular
 
 As its name suggests, this service is responsible for handling audio data on the client. The service essentially acts as the glue between the Web Audio API, the RecorderJS plugin and our back-end server; it handles both enrollment and authentication recordings. At this point I should give a shout out to Chris Wilson and his [AudioRecorder demo](https://webaudiodemos.appspot.com/AudioRecorder/). I borrowed a couple of his initialization functions to connect the audio from the browser to the RecorderJS plugin. With the audio foundation in place, we can build out the audio service by adding methods to support the start of a recording:
 
-```
+```javascript
 this.startRecording = function (theAction, theFirstName, callback) {
   if (!audioRecorder) {
     callback('audioRecorder is not set');
@@ -178,7 +180,7 @@ this.startRecording = function (theAction, theFirstName, callback) {
 ```
 
 The following method and helper function are invoked when a recording ends:
-```
+```javascript
 this.stopRecording = function (callback) {
 if (!audioRecorder) {
 callback('audioRecorder is not set');
@@ -234,16 +236,18 @@ Next, let's generate the client-side enrollment and authentication routes using 
 
 ```
 yo angular-fullstack:route enroll
+```
+```
 yo angular-fullstack:route authenticate
 ```
 
 These routes require very similar presentation logic, so let's generate a shared AngularJS controller to keep the code DRY:
-
+javascript
 `yo angular-fullstack:controller global`
 
 The global controller adds a `startRecording()` method to `$scope`:
 
-```
+```javascript
 $scope.startRecording = function (action) {
 if ($scope.recording) {
 // force timer to stop
@@ -277,7 +281,7 @@ $timeout.cancel(promise);
 
 This method handles the presentation logic when the user starts recording and uses the audioService we defined earlier. A countdown timer is used to control the recording. Once the timer stops, the recording is stopped and the above service sends the audio off to the server for processing. All that's left to do in the controller is handle the service's response:
 
-```
+```javascript
 function processAudio() {
 audioService.stopRecording(function (err, result) {
 // handle audioService response
@@ -310,7 +314,8 @@ $scope.status = 'Sorry we were unable to authenticate you. Please try again.';
 ```
 
 Finally, the angular-fullstack generator created a shared navbar component for our app. We just need to add our `/enroll` and `/authenticate` routes to the controller array so they appear in the header menu:
-```
+
+```javascript
 $scope.menu = [{
 'title': 'Home',
 'link': '/'
