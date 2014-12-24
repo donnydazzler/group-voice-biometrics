@@ -320,14 +320,11 @@ $scope.menu = [{
 ```
 
 ## Running the app
-Navigate to the project root, enter `grunt serve` and go to [http://localhost:9000/](http://localhost:9000/) in your recent version of Chrome or Firefox. You should see a page like this:
-![Main page screenshot](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/main.png "Main page")
+Navigate to the project root, enter `grunt serve` and go to [http://localhost:9000/](http://localhost:9000/) in your recent version of Chrome or Firefox. You should see a page like [this](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/main.png).
 
-During the enrollment phase, don't forget to enable the microphone and enter a first name. Make sure your microphone volume is nice and high (I set mine to the highest level with ambient noise reduction enabled). Click on the mic to record 3-7 enrollments.
-![Enroll page screenshot](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/enroll.png "Enroll page")
+During the enrollment phase, don't forget to enable the microphone and enter a first name. Make sure your microphone volume is nice and high (I set mine to the highest level with ambient noise reduction enabled). Click on the mic to record 3-7 [enrollments](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/enroll.png).
 
-At this point, you can start authenticating with your voice!
-![Authenticate page screenshot](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/authenticate.png "Authenticate page")
+At this point, you can start authenticating with your [voice](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/authenticate.png)!
 
 Here's the [GitHub repo](https://github.com/gmillward/group-voice-biometrics) for the demo app. (Keep in mind this is demo code, so it's not fully optimized. Pull requests are welcome :)
 
