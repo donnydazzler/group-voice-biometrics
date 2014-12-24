@@ -67,6 +67,7 @@ module.exports = {
 ```
 
 Let's generate our server-side enrollment and authentication endpoints:
+
 ```
 yo angular-fullstack:endpoint enrollment
 ```
@@ -89,53 +90,53 @@ The meat of the server-side logic is in the `audioHandler`. This contains severa
 
 ```javascript
 module.exports = function handleAudio(req, res, action) {
-var dataView,
-enrollmentId,
-detectedVoiceprintText,
-detectedTextConfidence,
-firstName,
-enrollment,
-promise;
+  var dataView,
+    enrollmentId,
+    detectedVoiceprintText,
+    detectedTextConfidence,
+    firstName,
+    enrollment,
+    promise;
 
-dataView = req.body;
-firstName = req.query && req.query.firstName;
+  dataView = req.body;
+  firstName = req.query && req.query.firstName;
 
-if (dataView) {
-var voiceIt = new VoiceIt({
-developerId: config.VOICEIT_DEV_ID
-});
+  if (dataView) {
+    var voiceIt = new VoiceIt({
+      developerId: config.VOICEIT_DEV_ID
+    });
 
-config.wav = dataView;
+    config.wav = dataView;
 
-if (action === 'enroll') {
-promise = voiceIt.enrollments.create(config);
-}
-if (action === 'authenticate') {
-promise = voiceIt.authentications.authentication(config);
-}
+    if (action === 'enroll') {
+      promise = voiceIt.enrollments.create(config);
+    }
+    if (action === 'authenticate') {
+      promise = voiceIt.authentications.authentication(config);
+    }
 
-promise.then(function (body) {
-console.log('voiceIt response body:', body);
+    promise.then(function (body) {
+      console.log('voiceIt response body:', body);
 
-enrollmentId = body.EnrollmentID;
-detectedVoiceprintText = body.DetectedVoiceprintText;
-detectedTextConfidence = body.DetectedTextConfidence;
+      enrollmentId = body.EnrollmentID;
+      detectedVoiceprintText = body.DetectedVoiceprintText;
+      detectedTextConfidence = body.DetectedTextConfidence;
 
-if (enrollmentId) {
-if (action === 'enroll') {
-  processEnrollment(enrollmentId, detectedTextConfidence, firstName);
-}
-if (action === 'authenticate') {
-  processAuthentication(enrollmentId);
-}
-} else {
-  console.log('No enrollment ID returned from VoiceIt');
-  return res.status(400).json({result: 'No enrollment ID returned from VoiceIt'});
-}
-}, function (err) {
-  console.log('error calling VoiceIt:', err);
-  return res.status(400).json({result: 'error calling VoiceIt: ' + err});
-  });
+      if (enrollmentId) {
+        if (action === 'enroll') {
+          processEnrollment(enrollmentId, detectedTextConfidence, firstName);
+        }
+        if (action === 'authenticate') {
+          processAuthentication(enrollmentId);
+        }
+      } else {
+        console.log('No enrollment ID returned from VoiceIt');
+        return res.status(400).json({result: 'No enrollment ID returned from VoiceIt'});
+      }
+    }, function (err) {
+      console.log('error calling VoiceIt:', err);
+      return res.status(400).json({result: 'error calling VoiceIt: ' + err});
+    });
   } else {
     console.log('No audio data in request body');
     return res.status(400).json({result: 'No audio data in request body'});
@@ -174,51 +175,52 @@ this.startRecording = function (theAction, theFirstName, callback) {
 ```
 
 The following method and helper function are invoked when a recording ends:
+
 ```javascript
 this.stopRecording = function (callback) {
-if (!audioRecorder) {
-callback('audioRecorder is not set');
-return;
-}
-audioRecorder.stop();
-console.log('stopped recording, action:', action);
+  if (!audioRecorder) {
+    callback('audioRecorder is not set');
+    return;
+  }
+  audioRecorder.stop();
+  console.log('stopped recording, action:', action);
 
-var promise = sendAudio();
-promise.then(function (result) {
-if (result) {
-result.action = action;
-callback(null, result);
-} else {
-callback('no result returned from server');
-}
-}, function (err) {
-callback(err);
-});
+  var promise = sendAudio();
+  promise.then(function (result) {
+    if (result) {
+      result.action = action;
+      callback(null, result);
+    } else {
+      callback('no result returned from server');
+    }
+  }, function (err) {
+    callback(err);
+  });
 };
 
 function sendAudio() {
-var deferred = $q.defer(), url;
-audioRecorder.getBuffer(function () {
-// exportWAV() interleaves the left and right channels (typed arrays), encodes and returns a DataView.
-// The wav is in little-endian format (least significant byte is first; the most common CPU architecture).
-audioRecorder.exportWAV(function (dataView) {
-// POST wav data to server-side
-url = (action === 'authenticate') ? '/api/authentications' : '/api/enrollments';
-$.ajax({
-url: url + '?firstName=' + firstName,
-type: 'POST',
-contentType: 'audio/wav',
-data: dataView,
-processData: false
-}).success(function (data) {
-//console.log('Response from server:', data);
-deferred.resolve(data);
-}).error(function (jqXHR, textStatus, errorThrown) {
-  //console.log('textStatus:', textStatus);
-  //console.log('errorThrown:', errorThrown);
-  deferred.reject(errorThrown);
-  });
-  });
+  var deferred = $q.defer(), url;
+  audioRecorder.getBuffer(function () {
+    // exportWAV() interleaves the left and right channels (typed arrays), encodes and returns a DataView.
+    // The wav is in little-endian format (least significant byte is first; the most common CPU architecture).
+    audioRecorder.exportWAV(function (dataView) {
+      // POST wav data to server-side
+      url = (action === 'authenticate') ? '/api/authentications' : '/api/enrollments';
+      $.ajax({
+        url: url + '?firstName=' + firstName,
+        type: 'POST',
+        contentType: 'audio/wav',
+        data: dataView,
+        processData: false
+      }).success(function (data) {
+        //console.log('Response from server:', data);
+        deferred.resolve(data);
+      }).error(function (jqXHR, textStatus, errorThrown) {
+        //console.log('textStatus:', textStatus);
+        //console.log('errorThrown:', errorThrown);
+        deferred.reject(errorThrown);
+      });
+    });
   });
   return deferred.promise;
 }
@@ -243,33 +245,33 @@ The global controller adds a `startRecording()` method to `$scope`:
 
 ```javascript
 $scope.startRecording = function (action) {
-if ($scope.recording) {
-// force timer to stop
-$scope.recording = false;
-$scope.counter = 0;
-return;
-}
-if (action === 'enroll' && !$scope.firstName) {
-$scope.status = 'Please enter your first name!';
-return;
-}
-$scope.counter = 5;
-$scope.status = 'Recording...';
+  if ($scope.recording) {
+    // force timer to stop
+    $scope.recording = false;
+    $scope.counter = 0;
+    return;
+  }
+  if (action === 'enroll' && !$scope.firstName) {
+    $scope.status = 'Please enter your first name!';
+    return;
+  }
+  $scope.counter = 5;
+  $scope.status = 'Recording...';
 
-// start countdown
-var promise = $timeout(countdown, 1000);
-promise.then(function () {
-resetUI();
-processAudio();
-});
+  // start countdown
+  var promise = $timeout(countdown, 1000);
+  promise.then(function () {
+    resetUI();
+    processAudio();
+  });
 
-// start recording
-audioService.startRecording(action, $scope.firstName, function (err) {
-if (err) {
-$scope.status = 'Please reload the page and enable your microphone!';
-$timeout.cancel(promise);
-}
-});
+  // start recording
+  audioService.startRecording(action, $scope.firstName, function (err) {
+    if (err) {
+      $scope.status = 'Please reload the page and enable your microphone!';
+      $timeout.cancel(promise);
+    }
+  });
 };
 ```
 
@@ -277,33 +279,33 @@ This method handles the presentation logic when the user starts recording and us
 
 ```javascript
 function processAudio() {
-audioService.stopRecording(function (err, result) {
-// handle audioService response
-if (err) {
-console.log('error with audio request:', err);
-$scope.status = 'Oops, there was an error!';
-return;
-}
+  audioService.stopRecording(function (err, result) {
+    // handle audioService response
+    if (err) {
+      console.log('error with audio request:', err);
+      $scope.status = 'Oops, there was an error!';
+      return;
+    }
 
-if (result.action === 'enroll') {
-$scope.enrollNumber = result.enrollmentId.length;
-if (result.result === 'success') {
-$scope.status = 'Successful enrollment!';
-return;
-} else {
-$scope.status = 'Sorry your enrollment was unsuccessful. Please try again.';
-return;
-}
-}
+    if (result.action === 'enroll') {
+      $scope.enrollments = result.enrollments;
+      if (result.result === 'success') {
+        $scope.status = 'Successful enrollment!';
+        return;
+      } else {
+        $scope.status = 'Sorry your enrollment was unsuccessful. Please try again.';
+        return;
+      }
+    }
 
-if (result.action === 'authenticate') {
-if (result.result === 'success') {
-$scope.status = 'Hi ' + result.firstName + '!';
-} else {
-$scope.status = 'Sorry we were unable to authenticate you. Please try again.';
-}
-}
-});
+    if (result.action === 'authenticate') {
+      if (result.result === 'success') {
+        $scope.status = 'Hi ' + result.firstName + '!';
+      } else {
+        $scope.status = 'Sorry we were unable to authenticate you. Please try again.';
+      }
+    }
+  });
 }
 ```
 
@@ -311,14 +313,14 @@ Finally, the angular-fullstack generator created a shared navbar component for o
 
 ```javascript
 $scope.menu = [{
-'title': 'Home',
-'link': '/'
+  'title': 'Home',
+  'link': '/'
 }, {
-'title': 'Enroll',
-'link': '/enroll'
+  'title': 'Enroll',
+  'link': '/enroll'
 }, {
-'title': 'Authenticate',
-'link': '/authenticate'
+  'title': 'Authenticate',
+  'link': '/authenticate'
 }];
 ```
 
