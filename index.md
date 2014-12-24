@@ -23,7 +23,7 @@ Here's a [screenshot](https://raw.githubusercontent.com/gmillward/group-voice-bi
 
 Most of the defaults are fine for us. Quick tip: `protractor.conf.js` needs a few tweaks if you want to run a standalone Selenium server:
 
-```
+```javascript
 //chromeOnly: true,
 directConnect: false,
 chromeDriver: '/usr/local/lib/node_modules/protractor/selenium/chromedriver',
@@ -34,6 +34,7 @@ seleniumAddress: 'http://localhost:4444/wd/hub',
 A `grunt serve` from the project's root directory will start the app. `grunt build` and `grunt test` are also worth running here, just to make sure that everything is working fine.
 
 The generator gives us some very useful dependencies out of the box; we'll grab a few more for this app:
+
 * voice-it - wrapper module for the VoiceIt API
 * q - for promises
 * request - to simplify server-side HTTP requests
@@ -51,13 +52,12 @@ app.use(bodyParser.raw({limit: '50mb', type: 'audio/wav'}));
 ```
 
 Next, create the following environment variables to store the important config data:
-```
-VOICEIT_EMAIL
-VOICEIT_PWD
-VOICEIT_DEV_ID
-```
 
-Next, add a server-side config file (`server/config/config.js`); this file contains all of the configuration data for the app and the property names are compatible with the VoiceIt API wrapper:
+`VOICEIT_EMAIL`
+`VOICEIT_PWD`
+`VOICEIT_DEV_ID`
+
+Next, add a server-side config file `server/config/config.js`; this file contains all of the configuration data for the app and the property names are compatible with the VoiceIt API wrapper:
 
 ```
 module.exports = {
