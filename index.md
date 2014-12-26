@@ -2,14 +2,14 @@
 layout: index
 ---
 ### Introduction
-Many of us appreciate that authenticating via username and password is a cumbersome way to establish an identity. In addition, passwords are vulnerable if they are not managed correctly by their owners and keepers. A number of alternative authentication mechanisms have emerged over the years, one of which is voice-based authentication. While it's not a silver bullet, voice-based authentication can be an attractive option in certain types of scenarios. One use case I wanted to explore further was a group of users sharing a single device and needing to establish their identity to perform a low-risk transaction. For example, staff members at a retail store may authenticate with a shared terminal to see if an item is in stock, or a restaurant server may login to a shared terminal to locate an open table. All this without having to remember yet another password. Sounds good? Awesome, let's jump in!
+Many of us appreciate that authenticating via username and password is a cumbersome way to establish an identity. In addition, passwords are vulnerable if they are not managed correctly by their owners and keepers. A number of alternative authentication mechanisms have emerged over the years, one of which is voice-based authentication. While it's not a silver bullet, voice-based authentication can be an attractive option in certain types of scenarios. One use case I wanted to explore further was a group of users sharing a device and needing to establish their identity to perform a low-risk transaction. For example, staff members at a retail store may authenticate with a shared terminal to see if an item is in stock, or a restaurant server may login to a shared terminal to locate an open table. The goal is to authenticate the end user with just their voice and without them having to remember yet another password. Sounds good? Awesome, let's jump in!
 
 I decided to build a browser-based app to demonstrate the concept. Of course, the application could be a native mobile or desktop app, basically anything that can talk HTTP. I used the MEAN stack ([MongoDB](http://www.mongodb.org/), [Express.js](http://expressjs.com/), [AngularJS](https://angularjs.org/), [Node.js](http://nodejs.org/)), because I've found this to be a great environment for rapid prototyping. And for the all-important voice authentication step, I chose to use the [VoiceIt API](http://www.voiceit-tech.com/).
 
-At this point I should note that the folks at VoiceIt were tremendously helpful as I worked on this demo. When I started building the app, I wasn't sure how this particular use case could be solved using the VoiceIt API. My original plan was to register and enroll individual users within the VoiceIt system. One drawback with this approach was that every user required their own username and password - the exact scenario I was hoping to avoid. I could have generated users with dummy usernames and passwords and looped through their voiceprints looking for a match on every authentication attempt, but this would have been inefficient. Fortunately Noel Grover at VoiceIt had a better idea: create a single VoiceIt user and associate all of the voiceprints with this user. The key to this is that every successful VoiceIt enrollment generates a unique enrollment ID. Following a successful enrollment, our demo app stores the user's first name and enrollment ID in MongoDB. If there's a voiceprint match at authentication time, VoiceIt returns the matching enrollment ID in the response. The demo app does a quick lookup to retrieve the user's information based on their enrollment ID, and the app knows who the end user is based on their voice alone.
+At this point I should note that the folks at VoiceIt were tremendously helpful as I worked on the demo. When I started building the app, I wasn't sure how this particular use case could be solved using the VoiceIt API. My original plan was to register and enroll individual users within the VoiceIt system. One drawback with this approach was that every user required their own username and password - the exact scenario I was hoping to avoid. Of course, I could have generated users with dummy usernames and passwords and looped through their voiceprints looking for a match at authentication time, but this would have been inefficient. Fortunately Noel Grover at VoiceIt had a better idea: create a single VoiceIt user and associate all of the voiceprints with this user. The key to this is that every successful VoiceIt enrollment generates a unique enrollment ID. Upon a successful enrollment, our demo app stores the user's first name and an enrollment ID in the database. If there's a voiceprint match at authentication time, VoiceIt returns the matching enrollment ID in the response. The demo app does a quick lookup to retrieve the user's information using the enrollment ID returned by VoiceIt, and the user's identity is established.
 
 ### The Demo App
-If you want to build or run the demo app, the first step is to sign up for a (free) Developer ID at the [Voiceprint Developer Portal](https://siv.voiceprintportal.com/). Once you have your Developer ID and password, login to the Voiceprint Developer Portal and create an end user. This is the user we will use to register the voiceprints. Your Developer ID, the end user's username and the end user's password are all required to run the demo, but these parameters are stored on the server and the end user doesn't need to know anything about them.
+If you want to build or run the demo app, the first step is to sign up for a free Developer ID at the [Voiceprint Developer Portal](https://siv.voiceprintportal.com/). Once you have your Developer ID and password, login to the Voiceprint Developer Portal and create an end user. This is the user we will use to register the voiceprints. Your Developer ID, the end user's username and the end user's password are all required to run the demo, but these parameters are stored on the server and the end user doesn't need to know anything about them.
 
 I'm going to assume that you are comfortable with [Yeoman](http://yeoman.io/) and MongoDB and have both of these installed. We'll use the [angular-fullstack generator](https://github.com/DaftMonk/generator-angular-fullstack) to build out the app; this is a wonderful generator for building MEAN apps quickly and takes care of the tedious work for you. Don't forget that MongoDB (i.e., the `mongod` process) must be up and running before generating the app. Create a new directory, cd into it, and run the angular-fullstack generator:
 
@@ -29,7 +29,7 @@ seleniumServerJar: '/usr/local/lib/node_modules/protractor/selenium',
 seleniumAddress: 'http://localhost:4444/wd/hub',
 ```
 
-A `grunt serve` from the project's root directory will start the app. `grunt build` and `grunt test` are also worth running here, just to make sure that everything is working fine.
+With MongoDB running, a `grunt serve` from the project's root directory will start the app. `grunt build` and `grunt test` are also worth running here, just to make sure that everything is working fine.
 
 The generator gives us some very useful dependencies out of the box; we'll grab a few more for this app:
 
@@ -40,7 +40,7 @@ The generator gives us some very useful dependencies out of the box; we'll grab 
 Run `npm install voice-it q request --save` to install the modules and add them to the dependency list. Now that the app's foundation is in place, let's build out the server side.
 
 ### Server-Side
-Before jumping into the server-side code, I have an Express body-parser configuration tip for you: since we are going to be POSTing WAV files to the server rather than JSON data, we need to ensure that the server is prepared to receive this kind of data and also files of a reasonable size. This gave me a multi-day headache; I'm hoping that others will benefit from my lesson learned! So make the following changes in `server/config/express.js`:
+Before jumping into the server-side code, I have an Express.js `body-parser` configuration tip for you: since we are going to be POSTing WAV files to the server rather than JSON data, we need to ensure that the server is prepared to receive this type of data and files of a reasonable size. This gave me a multi-day headache, so I'm hoping that others will benefit from my lesson learned! So we need to make the following changes in `server/config/express.js`:
 
 ```javascript
 //app.use(bodyParser.urlencoded({ extended: false }));
@@ -48,7 +48,7 @@ Before jumping into the server-side code, I have an Express body-parser configur
 app.use(bodyParser.raw({limit: '50mb', type: 'audio/wav'}));
 ```
 
-Next, create the following environment variables to store the important config data: `VOICEIT_EMAIL`, `VOICEIT_PWD` and `VOICEIT_DEV_ID`.
+Next, create the following system environment variables to store the important config data: `VOICEIT_DEV_ID`, `VOICEIT_EMAIL` and `VOICEIT_PWD`. The values are the ones you created earlier. I'm going to assume that you know how to create environment variables on your system.
 
 Add a server-side config file `server/config/config.js`; this file contains all of the configuration data for the app and the property names are compatible with the VoiceIt API wrapper:
 
@@ -85,7 +85,7 @@ var EnrollmentSchema = new Schema({
 
 As you can see, the `firstName` field is of type string and indexed. We also store an array of `enrollmentId`s with each enrollment - there is no limit as to the number that can be stored by VoiceIt.
 
-The meat of the server-side logic is in the `audioHandler`. This contains several helper functions to process incoming requests and communicate with the VoiceIt wrapper and MongoDB. Let's look at the exported function:
+The bulk of the server-side logic is in the `audioHandler`. This contains several helper functions to process incoming requests and communicate with the VoiceIt wrapper and MongoDB. Let's look at the export:
 
 ```javascript
 module.exports = function handleAudio(req, res, action) {
@@ -143,7 +143,7 @@ module.exports = function handleAudio(req, res, action) {
 };
 ```
 
-Both the enrollment and authentication endpoints only accept HTTP POST requests. We start out by getting the WAV file from the request body and the user's first name (if one was passed in). An instance of the VoiceIt wrapper is created using the Developer ID obtained from the configuration. We add the WAV file to the config object; this is named such that it can be passed directly to the VoiceIt wrapper. The VoiceIt wrapper uses promises, so a successful response invokes the first function in our `then()` call. We grab the enrollment ID from the response body along with the speech to text confidence determined by VoiceIt. If we got an enrollment ID back from VoiceIt, this means that the request was successful.
+Both the enrollment and authentication endpoints accept HTTP POST requests. We start out by getting the WAV file from the request body and the user's first name (if one was passed in). An instance of the VoiceIt wrapper is created using the Developer ID obtained from the configuration. We add the WAV file to the config object; this is named so that it can be passed directly to the VoiceIt wrapper. The VoiceIt wrapper is promise-based, so a successful response invokes the first function in our `then()` call. We grab the enrollment ID from the response body along with the speech to text confidence determined by VoiceIt. If we got an enrollment ID back from VoiceIt, this means the request was successful.
 
 If the action was `enroll`, the `processEnrollment()` helper function is invoked. This checks to make sure that the speech to text confidence is high enough. I found this was a helpful addition to the VoiceIt API - if the speech to text confidence is low, the enrollment recording is less than ideal and is unlikely to yield good authentication results. The text confidence range is 0-1; I found that a threshold of 0.5 ensures that poor enrollment recordings are rejected. If the speech to text confidence exceeds the configured threshold, we have an enrollment ID that should be stored in MongoDB. The helper function creates an enrollment object consisting of the user's first name and the enrollment ID. We use the `findOneAndUpdate()` method to essentially do an upsert - either insert a new record if a matching first name does not exist, otherwise update the existing record with the new enrollment ID.
 
@@ -151,7 +151,9 @@ If the action was `authenticate`, the `processAuthentication()` helper function 
 
 ### Client-Side
 
-Our app uses the [Web Audio API](http://www.w3.org/TR/webaudio/) to capture audio in the browser. Unfortunately the Web Audio API is relatively new and isn't supported by all browsers yet, so the demo works best in recent desktop versions of Chrome and Firefox. We'll use Matt Diamond's [RecorderJS](https://github.com/mattdiamond/Recorderjs) plugin to export the audio. This is included in the app as a shared client-side component. One small but important change I made in `recorderWorker.js` was to export a `DataView` rather than a `Blob`; I found this was necessary in order for the server-side to process the WAV file in the request body.
+Our app uses the [Web Audio API](http://www.w3.org/TR/webaudio/) to capture audio in the browser. Unfortunately the Web Audio API is relatively new and isn't supported by all browsers yet, so the demo works best in recent desktop versions of Chrome and Firefox.
+
+We'll use Matt Diamond's [RecorderJS](https://github.com/mattdiamond/Recorderjs) plugin to export the audio. This is included in the app as a shared client-side component. One small but important change I made in `recorderWorker.js` was to export a `DataView` rather than a `Blob`; I found this was necessary in order for the server-side to process the WAV file in the request body.
 
 Continuing our journey from the back-end to front-end, let's generate an AngularJS service to support our future client-side controllers:
 
@@ -328,13 +330,15 @@ $scope.menu = [{
 ```
 
 ### Running the app
-Navigate to the project root, enter `grunt serve` and go to [http://localhost:9000/](http://localhost:9000/) in your recent version of Chrome or Firefox. You should see a page like [this](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/main.png).
+With MongoDB running, navigate to the project's root directory, enter `grunt serve` and go to [http://localhost:9000/](http://localhost:9000/) in your recent version of Chrome or Firefox. You should see a page like [this](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/main.png).
 
-During the enrollment phase, don't forget to enable the microphone and enter a first name. Make sure your microphone volume is nice and high (I set mine to the highest level with ambient noise reduction enabled). Click on the mic to record 3-7 [enrollments](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/enroll.png).
+A good test of the demo app is to ask a group of friends or relatives to enroll. During the enrollment phase, don't forget to enable the microphone and enter a first name. Make sure your microphone volume is nice and high (I set mine to the highest level with ambient noise reduction enabled). Click on the mic to record 3-7 [enrollments](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/enroll.png).
 
-At this point, you can start authenticating with your [voice](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/authenticate.png)!
+At this point, you can start authenticating members of your group with just their [voice](https://raw.githubusercontent.com/gmillward/group-voice-biometrics/gh-pages/images/authenticate.png)!
 
 Here's the [GitHub repo](https://github.com/gmillward/group-voice-biometrics) for the demo app. (Keep in mind this is demo code, so it's not fully optimized. Pull requests are welcome :)
 
 ### Next steps
 There are numerous extension points to this app. For example, you could add support for profile images, or add an audio visualization during the recording process (a la Chris Wilson's AudioRecorder demo, or [KITT's Voice Synthesizer](https://www.youtube.com/watch?v=WiTYzppwU7s) :). On the server-side, the authentication process could be used to create an OAuth "voice grant flow". The OAuth Authorization Server would issue an OAuth access token upon successful voice authentication. Another extension point would be to combine the voice authentication process with a command. This becomes a powerful way to enhance the user experience: the user could authenticate and jump to a specific part of the app simply by saying a command.
+
+I hope you found this demo helpful and were able to impress a few people with your voice authentication skills!
